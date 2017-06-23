@@ -10,8 +10,8 @@ function usage() {
 function buildDeployable() {
 		lein uberjar
 		cd scripts
-		zip -j ../"$1" Dockerfile ../target/"$2"-standalone.jar
-		zip -ur ../"$1" .ebextensions
+		zip -j ../../"$1" Dockerfile ../target/"$2"-standalone.jar
+		zip -ur ../../"$1" .ebextensions
 		cd ..
 }
 
