@@ -7,13 +7,6 @@ function usage() {
     exit 1
 }
 
-function buildDeployable() {
-    cd scripts
-    zip -j ../"$1" Dockerfile ../target/"$2"-standalone.jar
-    zip -ur ../"$1" .ebextensions
-    cd ..
-}
-
 function getEnvDescriptor() {
     aws elasticbeanstalk describe-environments \
         --application-name "$1" \
@@ -187,29 +180,4 @@ function configureAWS() {
   aws configure set default.region eu-west-1
   aws configure set default.output json
 }
-
-APPNAME=$1
-FILE="target/$2"
-ENV=${3:-dev}
-SOLUTION_STACK=${4:-64bit Amazon Linux 2017.03 v2.6.0 running Docker 1.12.6}
-if [ $# -lt 2 ] ; then
-    usage
-fi
-
-PATH=$PATH:/usr/local/bin
-
-buildDeployable "$FILE" "$APPNAME"
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    VERSION=$(stat -f '%m' -t '%Y' "$FILE")
-else
-    VERSION=$(stat --format='%Y' "$FILE")
-fi
-
-configureAWS
-checkEnvironment "$APPNAME" "$ENV"
-createAppRoleIfNotExists "$APPNAME"
-createAppEnvironmentIfNotExists "$APPNAME" "$ENV" "$SOLUTION_STACK"
-uploadBinaryArtifact "$APPNAME" "$FILE" "$VERSION"
-createApplicationVersionIfNotExists "$APPNAME" "$VERSION"
-updateEnvironment "$APPNAME" "$ENV" "$VERSION"
 
